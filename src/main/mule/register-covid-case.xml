@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d414b1a0-775e-4ae7-9db4-46007fd05880" basePath="covid" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
+		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="Logger" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="#[payload.source]"/>
+		<ee:transform doc:name="Transform Message" doc:id="2982d483-eac1-4a20-b831-7a5d5c46c3ef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
