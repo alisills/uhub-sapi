@@ -1,16 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d414b1a0-775e-4ae7-9db4-46007fd05880" basePath="covid" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="35862f94-9820-49c4-af0f-355d91d10c07" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="6Uf7cj63V*mpzQJ" database="ali" />
+	</db:config>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST"/>
-		<logger level="INFO" doc:name="Logger" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="#[payload.source]"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="Started register covid case flow: #[payload]"/>
+		<db:insert doc:name="Insert Covid Case Master" doc:id="9d33f00b-ae63-4b01-9d29-c01bf098c6dd" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO cvd_case_master
+	(source,
+	case_type,
+	first_name,
+	last_name,
+	phone,
+	email,
+	date_of_birth,
+	national_id,
+	national_id_type,
+	street_address,
+	city,
+	state,
+	postal,
+	country,
+	create_date,
+	update_date,
+	create_by,
+	update_by)
+VALUES 
+	(:source,
+	:case_type,
+	:first_name,
+	:last_name,
+	:phone,
+	:email,
+	To_date(:date_of_birth, 'YYYY-MM-DD'),
+	:national_id,
+	:national_id_type,
+	:street_address,
+	:city,
+	:state,
+	:postal,
+	:country,
+	To_date(:create_date, 'YYYY-MM-DD'),
+	To_date(:update_date, 'YYYY-MM-DD'),
+	:create_by,
+	:update_by)]]></db:sql>
+		</db:insert>
 		<ee:transform doc:name="Transform Message" doc:id="2982d483-eac1-4a20-b831-7a5d5c46c3ef" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
