@@ -29,6 +29,9 @@ type register_covid_case_meta_data = {|
       <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
 type: string]]></types:shape>
     </types:type>
+    <types:type name="update-covid-case" format="xml">
+      <types:example format="xml" element="covidCase" location="examples/update-covid-case-payload.xml"/>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#243a29fa-86b8-4668-89de-b099823ea5ea">
     <types:processor-declaration>
@@ -37,6 +40,20 @@ type: string]]></types:shape>
           <types:payload type="register-covid-case-meta-data"/>
         </types:message>
       </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#e9177078-b850-4d7c-825c-b9c01f68f008">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="update-covid-case"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="register-covid-case-meta-data"/>
+        </types:message>
+      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
 </types:mule>
