@@ -13,7 +13,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 		<db:my-sql-connection host="localhost" port="3306" user="root" password="6Uf7cj63V*mpzQJ" database="ali" />
 	</db:config>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
-		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST"/>
+		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
+		</http:listener>
 		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="Started register covid case flow: #[payload]"/>
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
@@ -96,6 +98,20 @@ WHERE national_id = :nationalID]]></db:sql>
 	nationalID: vars.covidPayload.national_id
 }]]]></db:input-parameters>
 		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9056b620-f483-4825-8fc5-4df83b0383f3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"caseID": payload[0].case_id
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="statusCode" ><![CDATA[201]]></ee:set-variable>
+				<ee:set-variable variableName="statusReason" ><![CDATA["OK"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
 	</flow>
 </mule>
