@@ -23,7 +23,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 			<ee:variables >
 				<ee:set-variable variableName="covidPayload" ><![CDATA[%dw 2.0
 output application/java
-var actionDate = now() as Date
+var actionDate = now() as String {format: "yyy-MM-dd"}
 var owner = "UHIS"
 ---
 {
@@ -48,8 +48,61 @@ var owner = "UHIS"
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<db:insert doc:name="Insert Covid Case Master" doc:id="9d33f00b-ae63-4b01-9d29-c01bf098c6dd" config-ref="Database_Config" autoGenerateKeys="true">
-			<db:sql ><![CDATA[INSERT INTO cvd_case_master
+		<db:stored-procedure doc:name="Insert Covid Case Stored Procedure" doc:id="dcb4f350-52d5-4bc9-bfd8-1f63dd71361d" config-ref="Database_Config">
+			<db:sql ><![CDATA[{CALL insert_covid_master(
+	:source,
+	:case_type,
+	:first_name,
+	:last_name,
+	:phone,
+	:email,
+	:date_of_birth,
+	:national_id,
+	:national_id_type,
+	:street_address,
+	:city,
+	:state,
+	:postal,
+	:country,
+	:create_date,
+	:update_date,
+	:create_by,
+	:update_by,
+	:out_case_id
+	)}]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+			<db:output-parameters >
+				<db:output-parameter key="out_case_id" type="BIGINT" />
+			</db:output-parameters>
+		</db:stored-procedure>
+		<ee:transform doc:name="Transform Message" doc:id="9056b620-f483-4825-8fc5-4df83b0383f3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	caseID: payload[0].case_id
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="statusCode" ><![CDATA[201]]></ee:set-variable>
+				<ee:set-variable variableName="statusReason" ><![CDATA["OK"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
+	</flow>
+	<flow name="register-covid-caseFlow1" doc:id="641bbc67-744a-4943-adc8-f05142498474" >
+		<logger level="INFO" doc:name="Logger" doc:id="27538c8a-a6d3-40f3-bf8c-0a52d3697573" />
+		<db:select doc:name="SELECT case_id" doc:id="f1446078-89de-4988-8ea2-f91ae2ee502d" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT max(case_id)
+FROM cvd_case_master 
+WHERE national_id = :national_id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	nationalID: vars.covidPayload.national_id
+}]]]></db:input-parameters>
+		</db:select>
+		<db:insert doc:name="Insert Covid Case Master" doc:id="9d33f00b-ae63-4b01-9d29-c01bf098c6dd" config-ref="Database_Config" autoGenerateKeys="true" queryTimeout="60000" queryTimeoutUnit="MILLISECONDS">
+			<db:sql><![CDATA[INSERT INTO cvd_case_master
 	(source,
 	case_type,
 	first_name,
@@ -87,37 +140,10 @@ VALUES
 	STR_TO_DATE(:update_date, '%Y-%m-%d'),
 	:create_by,
 	:update_by)]]></db:sql>
-			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
-			<db:auto-generated-keys-column-names >
+			<db:input-parameters><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+			<db:auto-generated-keys-column-names>
 				<db:auto-generated-keys-column-name value="case_id" />
 			</db:auto-generated-keys-column-names>
 		</db:insert>
-		<ee:transform doc:name="Transform Message" doc:id="9056b620-f483-4825-8fc5-4df83b0383f3" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"caseID": payload[0].case_id
-}]]></ee:set-payload>
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="statusCode" ><![CDATA[201]]></ee:set-variable>
-				<ee:set-variable variableName="statusReason" ><![CDATA["OK"]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
-	</flow>
-	<flow name="register-covid-caseFlow1" doc:id="641bbc67-744a-4943-adc8-f05142498474" >
-		<logger level="INFO" doc:name="Logger" doc:id="27538c8a-a6d3-40f3-bf8c-0a52d3697573" />
-		<db:select doc:name="SELECT case_id" doc:id="f1446078-89de-4988-8ea2-f91ae2ee502d" config-ref="Database_Config">
-			<db:sql><![CDATA[SELECT max(case_id) 
-AS case_id 
-FROM cvd_case_master 
-WHERE national_id = :nationalID]]></db:sql>
-			<db:input-parameters><![CDATA[#[{
-	nationalID: vars.covidPayload.national_id
-}]]]></db:input-parameters>
-		</db:select>
 	</flow>
 </mule>
