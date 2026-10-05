@@ -17,7 +17,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="Started register covid case flow: #[payload]"/>
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="covidPayload" ><![CDATA[%dw 2.0
 output application/java
 var actionDate = now() as Date
 var owner = "UHIS"
@@ -41,8 +43,8 @@ var owner = "UHIS"
 	update_by: owner,
 	first_name: payload.firstName,
 	email: payload.email
-}]]></ee:set-payload>
-			</ee:message>
+}]]></ee:set-variable>
+			</ee:variables>
 		</ee:transform>
 		<db:insert doc:name="Insert Covid Case Master" doc:id="9d33f00b-ae63-4b01-9d29-c01bf098c6dd" config-ref="Database_Config">
 			<db:sql ><![CDATA[INSERT INTO cvd_case_master
@@ -83,8 +85,17 @@ VALUES
 	STR_TO_DATE(:update_date, '%Y-%m-%d'),
 	:create_by,
 	:update_by)]]></db:sql>
-			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
 		</db:insert>
+		<db:select doc:name="SELECT case_id" doc:id="f1446078-89de-4988-8ea2-f91ae2ee502d" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT max(case_id) 
+AS case_id 
+FROM cvd_case_master 
+WHERE national_id = :nationalID]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	nationalID: vars.covidPayload.national_id
+}]]]></db:input-parameters>
+		</db:select>
 		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
 	</flow>
 </mule>
