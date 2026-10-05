@@ -71,7 +71,7 @@ VALUES
 	:last_name,
 	:phone,
 	:email,
-	To_date(:date_of_birth, 'YYYY-MM-DD'),
+	STR_TO_DATE(:date_of_birth, '%Y-%m-%d'),
 	:national_id,
 	:national_id_type,
 	:street_address,
@@ -79,8 +79,8 @@ VALUES
 	:state,
 	:postal,
 	:country,
-	To_date(:create_date, 'YYYY-MM-DD'),
-	To_date(:update_date, 'YYYY-MM-DD'),
+	STR_TO_DATE(:create_date, '%Y-%m-%d'),
+	STR_TO_DATE(:update_date, '%Y-%m-%d'),
 	:create_by,
 	:update_by)]]></db:sql>
 			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
