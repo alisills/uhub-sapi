@@ -3,6 +3,9 @@
     "243a29fa-86b8-4668-89de-b099823ea5ea": {
       "payload": "sample_data/json.json"
     },
+    "e9177078-b850-4d7c-825c-b9c01f68f008": {
+      "payload": "sample_data/covidcase.xml"
+    },
     "da52cd65-3ac6-45f7-859f-8be8bbc19eba": {
       "payload": "sample_data/statementresult.dwl"
     }
