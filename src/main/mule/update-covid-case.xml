@@ -97,6 +97,6 @@ if (payload.affectedRows > 0) {
 				<ee:set-variable variableName="statusReason" ><![CDATA["success"]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="End Log" doc:id="f851fc97-1921-4071-aa98-b7498ed15cd9" message="End of update covid case flow"/>
+		<logger level="INFO" doc:name="End Log" doc:id="f851fc97-1921-4071-aa98-b7498ed15cd9" message='transactionID:#[vars.transactionId], correlationID: #[vars.correlationId], message: "Completed update covid case flow", payload: #[payload]'/>
 	</flow>
 </mule>
