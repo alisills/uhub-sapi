@@ -26,13 +26,13 @@ var owner = "UHIS"
 	last_name: payload.covidCase.lastName,
 	source: payload.covidCase.source,
 	national_id_type: payload.covidCase.nationalIDType,
-	update_date: now,
+	update_date: actionDate,
 	create_by: owner,
 	phone: payload.covidCase.phone,
-	case_id: payload.covidCase.caseID as String,
+	case_id: payload.covidCase.caseID as Number,
 	state: payload.covidCase.address.state,
 	postal: payload.covidCase.address.postal as String,
-	create_date: now,
+	create_date: actionDate,
 	update_by: owner,
 	first_name: payload.covidCase.firstName,
 	email: payload.covidCase.email
@@ -59,8 +59,7 @@ SET
 	create_date = :create_date,
 	update_date = :update_date,
 	create_by = :create_by,
-	update_by = :update_by,
-	out_case_id = :out_case_id
+	update_by = :update_by
 WHERE
 	case_id = :case_id;]]></db:sql>
 			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
