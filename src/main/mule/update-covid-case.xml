@@ -34,6 +34,31 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<db:update doc:name="UPDATE covid case" doc:id="bb63d3dc-8955-4e20-bb56-d3705d3c7264" config-ref="Database_Config"/>
+		<db:update doc:name="UPDATE covid case" doc:id="bb63d3dc-8955-4e20-bb56-d3705d3c7264" config-ref="Database_Config">
+			<db:sql ><![CDATA[UPDATE cvd_case_master
+SET
+	source = :source,
+	case_type = :case_type,
+	first_name = :first_name,
+	last_name = :last_name,
+	phone = :phone,
+	email = :email,
+	date_of_birth = :date_of_birth,
+	national_id = :national_id,
+	national_id_type = :national_id_type,
+	street_address = :street_address,
+	city = :city,
+	state = :state,
+	postal = :postal,
+	country = :country,
+	create_date = :create_date,
+	update_date = :update_date,
+	create_by = :create_by,
+	update_by = :update_by,
+	out_case_id = :out_case_id
+WHERE
+	case_id = :case_id;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:update>
 	</flow>
 </mule>
