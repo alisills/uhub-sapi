@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="update-covid-caseFlow" doc:id="9439b6d3-dfef-48d8-bc52-80c8894c0d1b" >
-		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="PUT"/>
+		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases/{updateId}" allowedMethods="PUT"/>
 		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message="#[payload]"/>
 		<ee:transform doc:name="Prepare XML Data" doc:id="e9177078-b850-4d7c-825c-b9c01f68f008" >
 			<ee:message >
@@ -29,7 +29,7 @@ var owner = "UHIS"
 	update_date: actionDate,
 	create_by: owner,
 	phone: payload.covidCase.phone,
-	case_id: payload.covidCase.caseID as Number,
+	case_id: attributes.uriParams.updateId as Number,
 	state: payload.covidCase.address.state,
 	postal: payload.covidCase.address.postal as String,
 	create_date: actionDate,
@@ -62,7 +62,7 @@ SET
 	update_by = :update_by
 WHERE
 	case_id = :case_id;]]></db:sql>
-			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[payload.attributes]]]></db:input-parameters>
 		</db:update>
 		<ee:transform doc:name="Transform Message" doc:id="da52cd65-3ac6-45f7-859f-8be8bbc19eba" >
 			<ee:message >
@@ -70,7 +70,7 @@ WHERE
 output application/xml
 ---
 {
-	cases: payload
+	cases: payload.caseID
 }]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
