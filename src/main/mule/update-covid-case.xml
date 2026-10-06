@@ -10,11 +10,19 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases/{updateId}" allowedMethods="PUT"/>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="2aa94a7f-0677-4b28-a361-605ab0ec2878" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="transactionId" ><![CDATA[%dw 2.0
 output application/java
 ---
-attributes.headers.'x-transaction-id' default uuid()]]></ee:set-payload>
-			</ee:message>
+// uuid is a function that always generates a unique ID
+
+attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers.'x-correlation-id' default payload.covidCase.CaseID]]></ee:set-variable>
+			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message="#[payload]"/>
 		<ee:transform doc:name="Prepare XML Data" doc:id="e9177078-b850-4d7c-825c-b9c01f68f008" >
