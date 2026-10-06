@@ -69,7 +69,9 @@ WHERE
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/xml
 ---
-payload]]></ee:set-payload>
+{
+	cases: payload
+}]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
 				<ee:set-variable variableName="statusCode" ><![CDATA[200]]></ee:set-variable>
