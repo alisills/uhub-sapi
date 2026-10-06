@@ -60,5 +60,18 @@ WHERE
 	case_id = :case_id;]]></db:sql>
 			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
 		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="da52cd65-3ac6-45f7-859f-8be8bbc19eba" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="statusCode" ><![CDATA[200]]></ee:set-variable>
+				<ee:set-variable variableName="statusReason" ><![CDATA["success"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Log" doc:id="f851fc97-1921-4071-aa98-b7498ed15cd9" message="End of update covid case flow"/>
 	</flow>
 </mule>
