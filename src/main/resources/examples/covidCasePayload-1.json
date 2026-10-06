@@ -1,0 +1,20 @@
+{
+	case_id: "",
+	source: "",
+	case_type: "",
+	first_name: "",
+	last_name: "",
+	phone: "",
+	email: "",
+	date_of_birth: "",
+	national_id: "",
+	national_id_type: "",
+	street_address: "",
+	city: "",
+	state: "",
+	postal: "",
+	country: "",
+	update_date: "",
+ 	create_by: "",
+	update_by: ""
+}

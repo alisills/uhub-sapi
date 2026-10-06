@@ -21,39 +21,40 @@ attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
 				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
 output application/java
 ---
-attributes.headers.'x-correlation-id' default payload.covidCase.CaseID]]></ee:set-variable>
+attributes.headers.'x-correlation-id' default payload.covidCase.caseID]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message="#[payload]"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message='transactionID:#[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
 		<ee:transform doc:name="Prepare XML Data" doc:id="e9177078-b850-4d7c-825c-b9c01f68f008" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-var actionDate = now() as String {format: "yyy-MM-dd"}
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="covidCasePayload" ><![CDATA[%dw 2.0
+output application/java
+var actionDate = now() as String {format: "yyyy-MM-dd"}
 var owner = "UHIS"
 ---
 {
-	national_id: payload.covidCase.nationalID,
-	street_address: payload.covidCase.address.streetAddress,
-	country: payload.covidCase.address.country,
-	city: payload.covidCase.address.city,
-	date_of_birth: payload.covidCase.dateOfBirth as String,
-	case_type: payload.covidCase.caseType,
-	last_name: payload.covidCase.lastName,
+	case_id: payload.covidCase.caseID,
 	source: payload.covidCase.source,
-	national_id_type: payload.covidCase.nationalIDType,
+	case_type: payload.covidCase.caseType,
+	first_name: payload.covidCase.first_name,
+	last_name: payload.covidCase.last_name,
+	phone: payload.covidCase.phone,
+	email: payload.covidCase.email,
+	date_of_birth: payload.covidCase.date_of_birth,
+	national_id: payload.covidCase.national_id,
+	national_id_type: payload.covidCase.national_id_type,
+	street_address: payload.covidCase.street_address,
+	city: payload.covidCase.city,
+	state: payload.covidCase.state,
+	postal: payload.covidCase.postal,
+	country: payload.covidCase.country,
 	update_date: actionDate,
 	create_by: owner,
-	phone: payload.covidCase.phone,
-	case_id: attributes.uriParams.updateId as Number,
-	state: payload.covidCase.address.state,
-	postal: payload.covidCase.address.postal as String,
-	create_date: actionDate,
-	update_by: owner,
-	first_name: payload.covidCase.firstName,
-	email: payload.covidCase.email
-}]]></ee:set-payload>
-			</ee:message>
+	update_by: owner
+}]]></ee:set-variable>
+			</ee:variables>
 		</ee:transform>
 		<db:update doc:name="UPDATE covid case" doc:id="bb63d3dc-8955-4e20-bb56-d3705d3c7264" config-ref="Database_Config">
 			<db:sql ><![CDATA[UPDATE cvd_case_master
