@@ -48,17 +48,55 @@ WHERE national_id = :national_id]]></db:sql>
 }]]]></db:input-parameters>
 		</db:select>
 		<choice doc:name="Choice" doc:id="63e3fcd1-8401-4874-bc66-a6d32a981d94" >
-			<when >
-				<ee:transform doc:name="Transform Message" doc:id="046b61c4-fbbd-4e79-9f1f-27d6fa279d98" >
+			<when expression="#[sizeOf(payload)&gt;0]">
+				<ee:transform doc:name="Set Success Response" doc:id="046b61c4-fbbd-4e79-9f1f-27d6fa279d98" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+						<ee:set-payload ><![CDATA[output application/json
+var actionDate = now() as String {format: "yyyy-MM-dd"}
+var owner = "UHIS"
 ---
-{
+payload map (covidCase, indexOfCovidCase) -> {
+	caseId: payload.covidCase.case_iD,
+	source: payload.covidCase.source,
+	caseType: payload.covidCase.case_type,
+	firstName: payload.covidCase.firs_name,
+	lastName: payload.covidCase.last_name,
+	phone: payload.covidCase.phone,
+	email: payload.covidCase.email,
+	dateOfBirth: payload.covidCase.date_of_birth as String {
+		format: "yyyy-MM-dd"
+	},
+	nationalId: payload.covidCase.national_id,
+	nationalIdType: payload.covidCase.national_id_type,
+	address:{
+		streetAddress: payload.covidCase.address.street_address,
+		city: payload.covidCase.address.city,
+		state: upper(payload.covidCase.address.state),
+		postal: payload.covidCase.address.postal,
+		country: payload.covidCase.address.country	
+	},
+	createDate: owner,
+	updateDate: owner
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
+			<otherwise >
+				<ee:transform doc:name="Set Not Found Response" doc:id="c784159e-ea09-4360-958d-025f1f728536" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"code": 404,
+	"message": "Resource not found",
+	"description": "The server has not found anything matching the Request",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+	"transactionId": vars.transactionId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
 		</choice>
 	</flow>
 </mule>
