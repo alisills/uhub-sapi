@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="update-covid-caseFlow" doc:id="9439b6d3-dfef-48d8-bc52-80c8894c0d1b" >
-		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases/{updateId}" allowedMethods="PUT"/>
+		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases/" allowedMethods="PUT"/>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="2aa94a7f-0677-4b28-a361-605ab0ec2878" >
 			<ee:message >
 			</ee:message>
@@ -15,12 +15,13 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 				<ee:set-variable variableName="transactionId" ><![CDATA[%dw 2.0
 output application/java
 ---
-// uuid is a function that always generates a unique ID
+// uuid is a function that always generates a unique ID. Will find exact transaction log
 
 attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
 				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
 output application/java
 ---
+// Can find multiple logs
 attributes.headers.'x-correlation-id' default payload.covidCase.caseID]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
@@ -75,7 +76,6 @@ SET
 	state = :state,
 	postal = :postal,
 	country = :country,
-	create_date = :create_date,
 	update_date = :update_date,
 	create_by = :create_by,
 	update_by = :update_by
@@ -88,6 +88,7 @@ WHERE
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
+// If case ID is found it will document as such otherwise an empty object will show
 if (payload.affectedRows > 0) {
 	caseID: vars.covidCasePayload.case_id
 } else {}]]></ee:set-payload>
