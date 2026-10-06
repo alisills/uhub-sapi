@@ -13,24 +13,29 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
+var actionDate = now() as String {format: "yyy-MM-dd"}
+var owner = "UHIS"
 ---
 {
+	national_id: payload.covidCase.nationalID,
+	street_address: payload.covidCase.address.streetAddress,
+	country: payload.covidCase.address.country,
+	city: payload.covidCase.address.city,
+	date_of_birth: payload.covidCase.dateOfBirth as String,
+	case_type: payload.covidCase.caseType,
+	last_name: payload.covidCase.lastName,
 	source: payload.covidCase.source,
-	caseType: payload.covidCase.caseType,
-	firstName: payload.covidCase.firstName,
-	lastName: payload.covidCase.lastName,
+	national_id_type: payload.covidCase.nationalIDType,
+	update_date: now,
+	create_by: owner,
 	phone: payload.covidCase.phone,
-	email: payload.covidCase.email,
-	dateOfBirth: payload.covidCase.dateOfBirth as String,
-	nationalID: payload.covidCase.nationalID,
-	nationalIDType: payload.covidCase.nationalIDType,
-	address: {
-		streetAddress: payload.covidCase.address.streetAddress,
-		city: payload.covidCase.address.city,
-		state: payload.covidCase.address.state,
-		postal: payload.covidCase.address.postal as String,
-		country: payload.covidCase.address.country
-	}
+	case_id: payload.covidCase.caseID as String,
+	state: payload.covidCase.address.state,
+	postal: payload.covidCase.address.postal as String,
+	create_date: now,
+	update_by: owner,
+	first_name: payload.covidCase.firstName,
+	email: payload.covidCase.email
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

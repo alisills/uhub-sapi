@@ -49,11 +49,6 @@ type: string]]></types:shape>
           <types:payload type="update-covid-case"/>
         </types:message>
       </types:input-event>
-      <types:output-event>
-        <types:message>
-          <types:payload type="register-covid-case-meta-data"/>
-        </types:message>
-      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
 </types:mule>
