@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="get-covid-cases-by-national-idFlow" doc:id="aca133d0-5d39-4385-ad29-4b6210a79800" >
-		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalid}/{tech}" allowedMethods="GET"/>
+		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalid}" allowedMethods="GET"/>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="03526182-2ddb-41fe-acd4-ac39c2a5bfeb" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
