@@ -83,4 +83,5 @@ type covidCasePayload = {|
   <types:enrichment select="#03526182-2ddb-41fe-acd4-ac39c2a5bfeb"/>
   <types:enrichment select="#ea9c7170-bb62-4168-9853-74f2cb3d7683"/>
   <types:enrichment select="#0c2106ed-45ef-433b-acaf-134924eeaa45"/>
+  <types:enrichment select="#d0a63490-8f28-45a8-8f7a-3e395250c652"/>
 </types:mule>

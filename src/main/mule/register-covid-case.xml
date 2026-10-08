@@ -10,12 +10,26 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="35862f94-9820-49c4-af0f-355d91d10c07" >
-		<db:my-sql-connection host="localhost" port="3306" user="root" password="6Uf7cj63V*mpzQJ" database="ali" />
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="6Uf7cj63V*mpzQJ" database="ali" >
+			<db:pooling-profile />
+		</db:my-sql-connection>
 	</db:config>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
 		</http:listener>
+		<ee:transform doc:name="Set correlationId and transactionId" doc:id="d0a63490-8f28-45a8-8f7a-3e395250c652" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="transactionId" ><![CDATA[attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
+				<ee:set-variable variableName="inputPayload" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="Started register covid case flow: #[payload]"/>
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
