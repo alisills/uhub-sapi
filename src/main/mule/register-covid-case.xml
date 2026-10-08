@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d414b1a0-775e-4ae7-9db4-46007fd05880" basePath="covid" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
@@ -30,7 +31,23 @@ attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
 				<ee:set-variable variableName="inputPayload" ><![CDATA[payload]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message="Started register covid case flow: #[payload]"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message='transactionID: #[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
+		<validation:all doc:name="All" doc:id="420451de-5d08-4783-b27c-e1c05c446a11" >
+			<validation:is-not-null doc:name="sourceFieldRequired" doc:id="78d5f778-be38-47bd-8ea6-daea5ef4029b" value="#[vars.inputPayload.source]" message='#["Source field is required"]'/>
+			<validation:is-not-null doc:name="caseTypeFieldRequired" doc:id="62afcd4a-1623-4d2c-84d3-5d2653a75fd3" value="#[vars.inputPayload.caseType]" message='"Case type field is required"'/>
+			<validation:is-not-null doc:name="firstNameFieldRequired" doc:id="8c09042c-e9f3-47f3-a40d-0ca77a4cf443" value="#[vars.inputPayload.firstName]" message='#["First name field is required"]'/>
+			<validation:is-not-null doc:name="lastNameFieldRequired" doc:id="be70c6c7-dd50-45fa-a3e0-01990dd6a1ae" value="#[vars.inputPayload.lastName]" message='#["The last name field is required"]'/>
+			<validation:is-not-null doc:name="phoneFieldRequired" doc:id="7ef05c43-64cd-4d15-a7e6-0e7e70bb2441" value="#[vars.inputPayload.phone]" message='#["The phone field is required"]'/>
+			<validation:is-not-null doc:name="emailFieldRequired" doc:id="82e296e8-b46d-45c3-9383-161801c6e125" value="#[vars.inputPayload.email]" message='#["The email field is required"]'/>
+			<validation:is-not-null doc:name="dateOfBirthFieldRequired" doc:id="1e8de8b9-7622-4b90-a834-2c19ea81a009" value="#[vars.inputPayload.dateOfBirth]" message='#["The date of birth field is required"]'/>
+			<validation:is-not-null doc:name="nationalIdFieldRequired" doc:id="99f1c110-3f7f-4679-85ed-0767231dd313" value="#[vars.inputPayload.nationalId]" message='#["THe national ID field is required"]'/>
+			<validation:is-not-null doc:name="nationalIdTypeFieldRequired" doc:id="eae102ed-86b8-4a8d-b206-318453e43143" value="#[vars.inputPayload.nationalIdType]" message='#["The national ID type field is required"]'/>
+			<validation:is-not-null doc:name="streetAddressFieldRequired" doc:id="e8f780c0-70be-406a-b10a-952dd32a3823" value="#[vars.inputPayload.streetAddress]" message='#["The street address field is required"]'/>
+			<validation:is-not-null doc:name="cityFieldRequired" doc:id="cafea071-8c77-41cf-871c-b4b3a32dac7c" value="#[vars.inputPayload.city]" message='#["The city field is required"]'/>
+			<validation:is-not-null doc:name="stateFieldRequired" doc:id="9d4e9a6c-10c0-43fb-8cea-093c9a7830d7" value="#[vars.inputPayload.state]" message='#["The state field is required"]'/>
+			<validation:is-not-null doc:name="postalFieldRequired" doc:id="6db64c4b-6690-4317-8152-2431e0cf13e6" value="#[vars.inputPayload.postal]" message='#["The postal field is required"]'/>
+			<validation:is-not-null doc:name="countryFieldRequired" doc:id="5167f833-718a-467e-8432-e230cecc65c3" value="#[vars.inputPayload.country]" message='#["The country field is required"]'/>
+		</validation:all>
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
 			</ee:message>
