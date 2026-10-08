@@ -15,6 +15,36 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			<db:pooling-profile />
 		</db:my-sql-connection>
 	</db:config>
+	<sub-flow name="insert-covid-case-sub-flow" doc:id="8869439d-e778-4fde-a203-93576c55ccb7" >
+		<db:stored-procedure doc:name="Insert Covid Case Stored Procedure" doc:id="dcb4f350-52d5-4bc9-bfd8-1f63dd71361d" config-ref="Database_Config">
+			<db:sql><![CDATA[{CALL insert_covid_master(
+	:source,
+	:case_type,
+	:first_name,
+	:last_name,
+	:phone,
+	:email,
+	:date_of_birth,
+	:national_id,
+	:national_id_type,
+	:street_address,
+	:city,
+	:state,
+	:postal,
+	:country,
+	:create_date,
+	:update_date,
+	:create_by,
+	:update_by,
+	:out_case_id
+	)}]]></db:sql>
+			<db:input-parameters><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+			<db:output-parameters>
+				<db:output-parameter key="out_case_id" type="BIGINT" />
+			</db:output-parameters>
+		</db:stored-procedure>
+		<set-variable value='#["I am from sub flow"]' doc:name="Set Variable" doc:id="eb46e8df-5226-4056-b6d4-75a04d1c0f8a" variableName="temp"/>
+	</sub-flow>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
@@ -64,33 +94,7 @@ var owner = "UHIS"
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<db:stored-procedure doc:name="Insert Covid Case Stored Procedure" doc:id="dcb4f350-52d5-4bc9-bfd8-1f63dd71361d" config-ref="Database_Config">
-			<db:sql ><![CDATA[{CALL insert_covid_master(
-	:source,
-	:case_type,
-	:first_name,
-	:last_name,
-	:phone,
-	:email,
-	:date_of_birth,
-	:national_id,
-	:national_id_type,
-	:street_address,
-	:city,
-	:state,
-	:postal,
-	:country,
-	:create_date,
-	:update_date,
-	:create_by,
-	:update_by,
-	:out_case_id
-	)}]]></db:sql>
-			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
-			<db:output-parameters >
-				<db:output-parameter key="out_case_id" type="BIGINT" />
-			</db:output-parameters>
-		</db:stored-procedure>
+		<flow-ref doc:name="Flow Reference" doc:id="8507cbb9-b143-4911-a31c-078c43cce940" name="insert-covid-case-sub-flow" />
 		<logger level="INFO" doc:name="Logger" doc:id="127f793a-16eb-414e-a388-c6eeeccc821e" message='#[write(payload, "application/json")]'/>
 		<ee:transform doc:name="Transform Message" doc:id="9056b620-f483-4825-8fc5-4df83b0383f3" >
 			<ee:message >
