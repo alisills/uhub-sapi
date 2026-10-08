@@ -24,15 +24,23 @@ attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
 			<ee:message >
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="reportsDynamicQuery" ><![CDATA[if(!isEmpty(attributes.queryParams.state)) (
-	"select count(*) as count, case_type, state from cvd_case_master where upper(state) = '" ++ upper(attributes.queryParams.state) ++ "' group by case_type, state'"
+				<ee:set-variable variableName="reportsDynamicQuery" ><![CDATA[if (!isEmpty(attributes.queryParams.state default "")) (
+    "SELECT COUNT(*) AS count, case_type, state " ++
+    "FROM cvd_case_master " ++
+    "WHERE UPPER(state) = :state " ++
+    "GROUP BY case_type, state"
 ) else (
-	"select count(*) as count, case_type, state from cvd_case_master group by case_type, state"
+    "SELECT COUNT(*) AS count, case_type, state " ++
+    "FROM cvd_case_master " ++
+    "GROUP BY case_type, state"
 )]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<db:select doc:name="Select caseReports" doc:id="ea347457-1792-4f7a-bd5a-8a7878cb795d" config-ref="Database_Config">
-			<db:sql ><![CDATA[#["$(vars.reportsDynamicQuery)"]]]></db:sql>
+			<db:sql ><![CDATA[#[vars.reportsDynamicQuery]]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+    state: upper(attributes.queryParams.state default "")
+}]]]></db:input-parameters>
 		</db:select>
 		<ee:transform doc:name="prepareResponse" doc:id="5601a5e5-1ae3-4985-b5c7-00cfb90eabb6" >
 			<ee:message >
