@@ -8,6 +8,12 @@
     },
     "da52cd65-3ac6-45f7-859f-8be8bbc19eba": {
       "payload": "sample_data/statementresult.dwl"
+    },
+    "d0a63490-8f28-45a8-8f7a-3e395250c652": {
+      "attributes": "sample_data/httprequestattributes.dwl"
+    },
+    "2aa94a7f-0677-4b28-a361-605ab0ec2878": {
+      "attributes": "sample_data/HttpRequestAttributes_1.dwl"
     }
   }
 }
