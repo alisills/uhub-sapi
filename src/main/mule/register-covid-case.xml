@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d414b1a0-775e-4ae7-9db4-46007fd05880" basePath="covid" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
@@ -15,39 +16,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			<db:pooling-profile />
 		</db:my-sql-connection>
 	</db:config>
-	<sub-flow name="insert-covid-case-sub-flow" doc:id="8869439d-e778-4fde-a203-93576c55ccb7" >
-		<db:stored-procedure doc:name="Insert Covid Case Stored Procedure" doc:id="dcb4f350-52d5-4bc9-bfd8-1f63dd71361d" config-ref="Database_Config">
-			<db:sql><![CDATA[{CALL insert_covid_master(
-	:source,
-	:case_type,
-	:first_name,
-	:last_name,
-	:phone,
-	:email,
-	:date_of_birth,
-	:national_id,
-	:national_id_type,
-	:street_address,
-	:city,
-	:state,
-	:postal,
-	:country,
-	:create_date,
-	:update_date,
-	:create_by,
-	:update_by,
-	:out_case_id
-	)}]]></db:sql>
-			<db:input-parameters><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
-			<db:output-parameters>
-				<db:output-parameter key="out_case_id" type="BIGINT" />
-			</db:output-parameters>
-		</db:stored-procedure>
-		<set-variable value='#["I am from sub flow"]' doc:name="Set Variable" doc:id="eb46e8df-5226-4056-b6d4-75a04d1c0f8a" variableName="temp"/>
-	</sub-flow>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
+			<http:error-response >
+				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload.message]]]></http:body>
+			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="d0a63490-8f28-45a8-8f7a-3e395250c652" >
 			<ee:message >
@@ -62,7 +36,8 @@ attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message='transactionID: #[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
-		<flow-ref doc:name="registerCovidCaseValidation" doc:id="37eb9866-da24-49b9-9c25-22bf2cbddd2a" name="covid-case-validations-sub-flow"/>
+		<json:validate-schema doc:name="validateJsonSchema" doc:id="0bdd4e8b-a4ff-46d8-9f63-9d3d72612d18" schema="schemas/covid-case-json-schema"/>
+		<!-- [STUDIO:"registerCovidCaseValidation"]<flow-ref doc:name="registerCovidCaseValidation" doc:id="37eb9866-da24-49b9-9c25-22bf2cbddd2a" name="covid-case-validations-sub-flow"/> [STUDIO] -->
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
 			</ee:message>
@@ -94,7 +69,33 @@ var owner = "UHIS"
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="Flow Reference" doc:id="8507cbb9-b143-4911-a31c-078c43cce940" name="insert-covid-case-sub-flow" />
+		<db:stored-procedure doc:name="Insert Covid Case Stored Procedure" doc:id="dcb4f350-52d5-4bc9-bfd8-1f63dd71361d" config-ref="Database_Config">
+			<db:sql><![CDATA[{CALL insert_covid_master(
+	:source,
+	:case_type,
+	:first_name,
+	:last_name,
+	:phone,
+	:email,
+	:date_of_birth,
+	:national_id,
+	:national_id_type,
+	:street_address,
+	:city,
+	:state,
+	:postal,
+	:country,
+	:create_date,
+	:update_date,
+	:create_by,
+	:update_by,
+	:out_case_id
+	)}]]></db:sql>
+			<db:input-parameters><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+			<db:output-parameters>
+				<db:output-parameter key="out_case_id" type="BIGINT" />
+			</db:output-parameters>
+		</db:stored-procedure>
 		<logger level="INFO" doc:name="Logger" doc:id="127f793a-16eb-414e-a388-c6eeeccc821e" message='#[write(payload, "application/json")]'/>
 		<ee:transform doc:name="Transform Message" doc:id="9056b620-f483-4825-8fc5-4df83b0383f3" >
 			<ee:message >
