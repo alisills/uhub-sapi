@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
@@ -23,9 +25,30 @@ output application/java
 ---
 // Can find multiple logs
 attributes.headers.'x-correlation-id' default payload.covidCase.caseID]]></ee:set-variable>
+				<ee:set-variable variableName="inputPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.covidCase]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message='transactionID:#[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
+		<validation:all doc:name="All" doc:id="bdd8bc85-c65d-46d7-b827-a7af434639b2" >
+			<validation:is-not-null doc:name="caseIDFieldRequired" doc:id="6452639f-ce4f-4140-9a16-1f78658020c6" value="#[vars.inputPayload.caseID]" message='#["caseID field is required"]'/>
+			<validation:is-not-null doc:name="sourceFieldRequired" doc:id="bf3b9623-d772-4035-9030-c9125f90d413" value="#[vars.inputPayload.source]" message='#["Source field is required"]'/>
+			<validation:is-not-null doc:name="caseTypeFieldRequired" doc:id="a7417e04-d359-45bd-aa48-83daf3b69314" value="#[vars.inputPayload.caseType]" message='#["Case type field is required"]'/>
+			<validation:is-not-null doc:name="firstNameFieldRequired" doc:id="44ef7afe-f7d2-4755-b214-b671d30ba07d" value="#[vars.inputPayload.firstName]" message='#["First name field is required"]'/>
+			<validation:is-not-null doc:name="lastNameFieldRequired" doc:id="8bc5dffe-9dfe-4e56-8fe6-ae099e13d558" value="#[vars.inputPayload.lastName]" message='#["The last name field is required"]'/>
+			<validation:is-not-null doc:name="phoneFieldRequired" doc:id="b8937165-53a9-4247-b82f-3112f83b4797" value="#[vars.inputPayload.phone]" message='#["The phone field is required"]'/>
+			<validation:is-not-null doc:name="emailFieldRequired" doc:id="11fd604a-a4cf-4392-b0ac-5489d99a3a4d" value="#[vars.inputPayload.email]" message='#["The email field is required"]'/>
+			<validation:is-not-null doc:name="dateOfBirthFieldRequired" doc:id="5794c8d3-e985-4140-b6e7-05c92dfcb2ba" value="#[vars.inputPayload.dateOfBirth]" message='#["The date of birth field is required"]'/>
+			<validation:is-not-null doc:name="nationalIdFieldRequired" doc:id="58e0ca60-4133-4bc4-a222-29636c8f8233" value="#[vars.inputPayload.nationalID]" message='#["The national ID field is required"]'/>
+			<validation:is-not-null doc:name="nationalIdTypeFieldRequired" doc:id="959792d6-5c4e-4a72-9d9e-8e7963109579" value="#[vars.inputPayload.nationalIDType]" message='#["The national ID type field is required"]'/>
+			<validation:is-not-null doc:name="streetAddressFieldRequired" doc:id="2d964fc2-b484-4c95-b7fa-5d55a7edc1f1" value="#[vars.inputPayload.address.streetAddress]" message='#["The street address field is required"]'/>
+			<validation:is-not-null doc:name="cityFieldRequired" doc:id="683a65b3-51c1-4ee1-aee4-b84b578b2f4e" value="#[vars.inputPayload.address.city]" message='#["The city field is required"]'/>
+			<validation:is-not-null doc:name="stateFieldRequired" doc:id="c9cdd52a-7487-414a-8384-b16d1ac9ed68" value="#[vars.inputPayload.address.state]" message='#["The state field is required"]'/>
+			<validation:is-not-null doc:name="postalFieldRequired" doc:id="8861aed0-3d12-40bc-83d2-92982b0363bd" value="#[vars.inputPayload.address.postal]" message='#["The postal field is required"]'/>
+			<validation:is-not-null doc:name="countryFieldRequired" doc:id="78cfb10e-585d-436a-823a-41f969fcd956" value="#[vars.inputPayload.address.country]" message='#["The country field is required"]'/>
+		</validation:all>
 		<ee:transform doc:name="Prepare XML Data" doc:id="e9177078-b850-4d7c-825c-b9c01f68f008" >
 			<ee:message >
 			</ee:message>
