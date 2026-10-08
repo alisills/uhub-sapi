@@ -32,22 +32,7 @@ attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="e3d88d1d-99e8-41d3-bfef-ac55e6b04982" message='transactionID: #[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
-		<validation:all doc:name="All" doc:id="420451de-5d08-4783-b27c-e1c05c446a11" >
-			<validation:is-not-null doc:name="sourceFieldRequired" doc:id="78d5f778-be38-47bd-8ea6-daea5ef4029b" value="#[vars.inputPayload.source]" message='#["Source field is required"]'/>
-			<validation:is-not-null doc:name="caseTypeFieldRequired" doc:id="62afcd4a-1623-4d2c-84d3-5d2653a75fd3" value="#[vars.inputPayload.caseType]" message='#["Case type field is required"]'/>
-			<validation:is-not-null doc:name="firstNameFieldRequired" doc:id="8c09042c-e9f3-47f3-a40d-0ca77a4cf443" value="#[vars.inputPayload.firstName]" message='#["First name field is required"]'/>
-			<validation:is-not-null doc:name="lastNameFieldRequired" doc:id="be70c6c7-dd50-45fa-a3e0-01990dd6a1ae" value="#[vars.inputPayload.lastName]" message='#["The last name field is required"]'/>
-			<validation:is-not-null doc:name="phoneFieldRequired" doc:id="7ef05c43-64cd-4d15-a7e6-0e7e70bb2441" value="#[vars.inputPayload.phone]" message='#["The phone field is required"]'/>
-			<validation:is-not-null doc:name="emailFieldRequired" doc:id="82e296e8-b46d-45c3-9383-161801c6e125" value="#[vars.inputPayload.email]" message='#["The email field is required"]'/>
-			<validation:is-not-null doc:name="dateOfBirthFieldRequired" doc:id="1e8de8b9-7622-4b90-a834-2c19ea81a009" value="#[vars.inputPayload.dateOfBirth]" message='#["The date of birth field is required"]'/>
-			<validation:is-not-null doc:name="nationalIdFieldRequired" doc:id="99f1c110-3f7f-4679-85ed-0767231dd313" value="#[vars.inputPayload.nationalID]" message='#["The national ID field is required"]'/>
-			<validation:is-not-null doc:name="nationalIdTypeFieldRequired" doc:id="eae102ed-86b8-4a8d-b206-318453e43143" value="#[vars.inputPayload.nationalIDType]" message='#["The national ID type field is required"]'/>
-			<validation:is-not-null doc:name="streetAddressFieldRequired" doc:id="e8f780c0-70be-406a-b10a-952dd32a3823" value="#[vars.inputPayload.address.streetAddress]" message='#["The street address field is required"]'/>
-			<validation:is-not-null doc:name="cityFieldRequired" doc:id="cafea071-8c77-41cf-871c-b4b3a32dac7c" value="#[vars.inputPayload.address.city]" message='#["The city field is required"]'/>
-			<validation:is-not-null doc:name="stateFieldRequired" doc:id="9d4e9a6c-10c0-43fb-8cea-093c9a7830d7" value="#[vars.inputPayload.address.state]" message='#["The state field is required"]'/>
-			<validation:is-not-null doc:name="postalFieldRequired" doc:id="6db64c4b-6690-4317-8152-2431e0cf13e6" value="#[vars.inputPayload.address.postal]" message='#["The postal field is required"]'/>
-			<validation:is-not-null doc:name="countryFieldRequired" doc:id="5167f833-718a-467e-8432-e230cecc65c3" value="#[vars.inputPayload.address.country]" message='#["The country field is required"]'/>
-		</validation:all>
+		<flow-ref doc:name="registerCovidCaseValidation" doc:id="37eb9866-da24-49b9-9c25-22bf2cbddd2a" name="covid-case-validations-sub-flow"/>
 		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="243a29fa-86b8-4668-89de-b099823ea5ea" >
 			<ee:message >
 			</ee:message>
@@ -122,60 +107,5 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
-	</flow>
-	<flow name="register-covid-caseFlow1" doc:id="641bbc67-744a-4943-adc8-f05142498474" >
-		<logger level="INFO" doc:name="Logger" doc:id="27538c8a-a6d3-40f3-bf8c-0a52d3697573" />
-		<db:select doc:name="SELECT case_id" doc:id="f1446078-89de-4988-8ea2-f91ae2ee502d" config-ref="Database_Config">
-			<db:sql><![CDATA[SELECT max(case_id)
-FROM cvd_case_master 
-WHERE national_id = :national_id]]></db:sql>
-			<db:input-parameters><![CDATA[#[{
-	nationalID: vars.covidPayload.national_id
-}]]]></db:input-parameters>
-		</db:select>
-		<db:insert doc:name="Insert Covid Case Master" doc:id="9d33f00b-ae63-4b01-9d29-c01bf098c6dd" config-ref="Database_Config" autoGenerateKeys="true" queryTimeout="60000" queryTimeoutUnit="MILLISECONDS">
-			<db:sql><![CDATA[INSERT INTO cvd_case_master
-	(source,
-	case_type,
-	first_name,
-	last_name,
-	phone,
-	email,
-	date_of_birth,
-	national_id,
-	national_id_type,
-	street_address,
-	city,
-	state,
-	postal,
-	country,
-	create_date,
-	update_date,
-	create_by,
-	update_by)
-VALUES 
-	(:source,
-	:case_type,
-	:first_name,
-	:last_name,
-	:phone,
-	:email,
-	STR_TO_DATE(:date_of_birth, '%Y-%m-%d'),
-	:national_id,
-	:national_id_type,
-	:street_address,
-	:city,
-	:state,
-	:postal,
-	:country,
-	STR_TO_DATE(:create_date, '%Y-%m-%d'),
-	STR_TO_DATE(:update_date, '%Y-%m-%d'),
-	:create_by,
-	:update_by)]]></db:sql>
-			<db:input-parameters><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
-			<db:auto-generated-keys-column-names>
-				<db:auto-generated-keys-column-name value="case_id" />
-			</db:auto-generated-keys-column-names>
-		</db:insert>
 	</flow>
 </mule>
