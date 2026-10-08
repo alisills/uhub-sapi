@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="get-covid-reportsFlow" doc:id="7b570a90-f726-45e6-9c67-34deb9d74d64" >
 		<http:listener doc:name="Listener" doc:id="9cda4291-496a-43b7-a5e9-c61caa1b6d0b" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="GET"/>
-		<logger level="INFO" doc:name="Logger" doc:id="0160b36f-056c-417e-90eb-6646bb1f32b6" message="#[attributes.queryParams.state]"/>
+		<ee:transform doc:name="Set correlationId and transactionId" doc:id="ea9c7170-bb62-4168-9853-74f2cb3d7683" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
+				<ee:set-variable variableName="transactionId" ><![CDATA[attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="startLog" doc:id="13a96c7c-a801-4648-94a4-4f99f68920a7" message="This is the begging of the get covid reports flow"/>
+		<ee:transform doc:name="Prepare dynamicQuery" doc:id="0c2106ed-45ef-433b-acaf-134924eeaa45" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="reportsDynamicQuery" ><![CDATA[if(!isEmpty(attributes.queryParams.state)) (
+	"select count(*) as count, case_type, state from cvd_case_master where upper(state) = '" ++ upper(attributes.queryParams.state) ++ "' group by case_type, state'"
+) else (
+	"select count(*) as count, case_type, state from cvd_case_master group by case_type, state"
+)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 	</flow>
 </mule>

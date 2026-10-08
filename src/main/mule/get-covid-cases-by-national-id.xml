@@ -58,7 +58,7 @@ payload map (covidCase, indexOfCovidCase) -> {
 	caseId: covidCase.case_iD,
 	source: covidCase.source,
 	caseType: covidCase.case_type,
-	firstName: covidCase.firs_name,
+	firstName: covidCase.first_name,
 	lastName: covidCase.last_name,
 	phone: covidCase.phone,
 	email: covidCase.email,
