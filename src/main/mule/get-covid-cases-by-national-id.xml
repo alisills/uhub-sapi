@@ -7,17 +7,16 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="get-covid-cases-by-national-idFlow" doc:id="aca133d0-5d39-4385-ad29-4b6210a79800" >
-		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalid}" allowedMethods="GET"/>
+		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalID}" allowedMethods="GET"/>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="03526182-2ddb-41fe-acd4-ac39c2a5bfeb" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-}]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
 				<ee:set-variable variableName="transactionId" ><![CDATA[attributes.headers.'x-transaction-id' default uuid()]]></ee:set-variable>
+				<ee:set-variable variableName="correlationId" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="9761df45-8b24-4010-8b7e-07e350da7034" message='transactionID: #[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
@@ -56,24 +55,24 @@ var actionDate = now() as String {format: "yyyy-MM-dd"}
 var owner = "UHIS"
 ---
 payload map (covidCase, indexOfCovidCase) -> {
-	caseId: payload.covidCase.case_iD,
-	source: payload.covidCase.source,
-	caseType: payload.covidCase.case_type,
-	firstName: payload.covidCase.firs_name,
-	lastName: payload.covidCase.last_name,
-	phone: payload.covidCase.phone,
-	email: payload.covidCase.email,
-	dateOfBirth: payload.covidCase.date_of_birth as String {
+	caseId: covidCase.case_iD,
+	source: covidCase.source,
+	caseType: covidCase.case_type,
+	firstName: covidCase.firs_name,
+	lastName: covidCase.last_name,
+	phone: covidCase.phone,
+	email: covidCase.email,
+	dateOfBirth: covidCase.date_of_birth as String {
 		format: "yyyy-MM-dd"
 	},
-	nationalId: payload.covidCase.national_id,
-	nationalIdType: payload.covidCase.national_id_type,
+	nationalId: covidCase.national_id,
+	nationalIdType: covidCase.national_id_type,
 	address:{
-		streetAddress: payload.covidCase.address.street_address,
-		city: payload.covidCase.address.city,
-		state: upper(payload.covidCase.address.state),
-		postal: payload.covidCase.address.postal,
-		country: payload.covidCase.address.country	
+		streetAddress: covidCase.street_address,
+		city: covidCase.city,
+		state: upper(covidCase.state),
+		postal: covidCase.postal,
+		country: covidCase.country	
 	},
 	createDate: owner,
 	updateDate: owner
