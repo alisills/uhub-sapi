@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
 			<http:error-response >
-				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload.message]]]></http:body>
+				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload.message[0]]]]></http:body>
 			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="d0a63490-8f28-45a8-8f7a-3e395250c652" >

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd">
 	<flow name="update-covid-caseFlow" doc:id="9439b6d3-dfef-48d8-bc52-80c8894c0d1b" >
-		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/cases/" allowedMethods="PUT"/>
+		<http:listener doc:name="Listener" doc:id="257aa6bb-54d6-4e8c-b066-c1f1456115f2" config-ref="HTTP_Listener_config" path="v1/updateCases" allowedMethods="PUT"/>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="2aa94a7f-0677-4b28-a361-605ab0ec2878" >
 			<ee:message >
 			</ee:message>
@@ -32,8 +34,9 @@ payload.covidCase]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="91127d06-c115-4637-ae72-83052119e503" message='transactionID:#[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
-		<flow-ref doc:name="updateCovidCaseValidation" doc:id="9ce7d62c-425f-48bf-8225-fc06db1f2c9a" name="covid-case-validations-sub-flow" />
-		<validation:is-not-null doc:name="caseIDFieldRequired" doc:id="6452639f-ce4f-4140-9a16-1f78658020c6" value="#[vars.inputPayload.caseID]" message='#["caseID field is required"]' />
+		<xml-module:validate-schema doc:name="validateXmlSchema" doc:id="a5a5834f-6612-43f2-82e9-80166ac2a1c0" schemas="schemas/covid-case-xml-schema.xsd"/>
+		<!-- [STUDIO:"updateCovidCaseValidation"]<flow-ref doc:name="updateCovidCaseValidation" doc:id="9ce7d62c-425f-48bf-8225-fc06db1f2c9a" name="covid-case-validations-sub-flow" /> [STUDIO] -->
+		<!-- [STUDIO:"caseIDFieldRequired"]<validation:is-not-null doc:name="caseIDFieldRequired" doc:id="6452639f-ce4f-4140-9a16-1f78658020c6" value="#[vars.inputPayload.caseID&#93;" message='#["caseID field is required"&#93;' /> [STUDIO] -->
 		<ee:transform doc:name="Prepare XML Data" doc:id="e9177078-b850-4d7c-825c-b9c01f68f008" >
 			<ee:message >
 			</ee:message>
