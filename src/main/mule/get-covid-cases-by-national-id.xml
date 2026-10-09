@@ -7,7 +7,12 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="get-covid-cases-by-national-idFlow" doc:id="aca133d0-5d39-4385-ad29-4b6210a79800" >
-		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalID}" allowedMethods="GET"/>
+		<http:listener doc:name="Listener" doc:id="9aee8b9c-ac18-4ad9-93b2-2cfc7218d60d" config-ref="HTTP_Listener_config" path="v1/cases/{nationalID}" allowedMethods="GET">
+			<http:response statusCode="#[vars.statusCode]" />
+			<http:error-response statusCode="#[vars.statusCode]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="03526182-2ddb-41fe-acd4-ac39c2a5bfeb" >
 			<ee:message >
 			</ee:message>
@@ -17,6 +22,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 output application/json
 ---
 attributes.headers.'x-correlation-id' default correlationId]]></ee:set-variable>
+				<ee:set-variable variableName="statusCode" ><![CDATA[404]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Start Log" doc:id="9761df45-8b24-4010-8b7e-07e350da7034" message='transactionID: #[vars.transactionId], correlationID: #[vars.correlationId], message: "Started update covid case flow", payload: #[payload]'/>
@@ -81,21 +87,26 @@ payload map (covidCase, indexOfCovidCase) -> {
 				</ee:transform>
 			</when>
 			<otherwise >
-				<ee:transform doc:name="Set Not Found Response" doc:id="c784159e-ea09-4360-958d-025f1f728536" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+				<raise-error doc:name="raiseCustomError" doc:id="ee218052-0dea-4a27-9a52-4a817683fe67" type="CUSTOM: CASE_NOT_FOUND" description="The server has not found anything matching the Request-URI"/>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c751cdb1-6ad6-4631-bb07-fa8a6f2cf62c" type="CUSTOM: CASE_NOT_FOUND">
+				<ee:transform doc:name="Set Not Found Response" doc:id="c784159e-ea09-4360-958d-025f1f728536">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	"code": 404,
 	"message": "Resource not found",
-	"description": "The server has not found anything matching the Request",
+	"description": error.description,
 	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
 	"transactionId": vars.transactionId
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-			</otherwise>
-		</choice>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>

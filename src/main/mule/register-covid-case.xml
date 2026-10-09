@@ -137,7 +137,7 @@ output application/json
 					</ee:variables>
 				</ee:transform>
 			</on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0e11162f-d04b-4316-bd93-06b0f919f1f3" type="DB:CONNECTIVITY, HTTP:CONNECTIVITY">
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0e11162f-d04b-4316-bd93-06b0f919f1f3" type="CUSTOM:CONNECTION_FAILED">
 				<ee:transform doc:name="dbOnErrorPropagate" doc:id="477d02fe-ac9b-474e-ad4a-dd16809ac78f" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
