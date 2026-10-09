@@ -18,9 +18,11 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 	</db:config>
 	<flow name="register-covid-caseFlow" doc:id="2b936fed-191b-4515-8dab-41d7bb837ec3" >
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
-			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
-			<http:error-response >
-				<http:body ><![CDATA[#[vars.onErrorPropagate]]]></http:body>
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" >
+				<http:body ><![CDATA[#["I am success response body"]]]></http:body>
+			</http:response>
+			<http:error-response statusCode="#[vars.statusCode]">
+				<http:body ><![CDATA[#["I am error response body"]]]></http:body>
 			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="d0a63490-8f28-45a8-8f7a-3e395250c652" >
@@ -112,11 +114,29 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4e05f9e9-897b-4687-b97b-81b8ad1115a0" type="JSON:SCHEMA_NOT_HONOURED">
-				<ee:transform doc:name="Transform Message" doc:id="43d02ade-953d-4ad1-be15-2efaf2e59caf" >
-					<ee:message >
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9d87ce3d-e45a-4522-a425-a85d8fa15f92" type="JSON:SCHEMA_NOT_HONOURED">
+				<ee:transform doc:name="onErrorPropagate" doc:id="43d02ade-953d-4ad1-be15-2efaf2e59caf">
+					<ee:message>
 					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="onErrorPropagate"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"code": 400,
+	"message": "Bad request",
+	"description": error.description default "Request validation failed",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+	"transactionId": vars.transactionId default correlationId
+}]]></ee:set-variable>
+						<ee:set-variable variableName="statusCode"><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0e11162f-d04b-4316-bd93-06b0f919f1f3" type="DB:CONNECTIVITY">
+				<ee:transform doc:name="dbOnErrorPropagate" doc:id="477d02fe-ac9b-474e-ad4a-dd16809ac78f" >
+					<ee:message />
 					<ee:variables >
 						<ee:set-variable variableName="onErrorPropagate" ><![CDATA[%dw 2.0
 output application/json
@@ -125,6 +145,17 @@ output application/json
 	"code": 400,
 	"message": "Bad request",
 	"description": error.description default "Request validation failed",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+	"transactionId": vars.transactionId default correlationId
+}]]></ee:set-variable>
+						<ee:set-variable variableName="statusCode" ><![CDATA[503]]></ee:set-variable>
+						<ee:set-variable variableName="dbPropagate" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"code": 503,
+	"message": "Service unavailable",
+	"description": "The (upstream) service is temporarily not available",
 	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
 	"transactionId": vars.transactionId default correlationId
 }]]></ee:set-variable>
