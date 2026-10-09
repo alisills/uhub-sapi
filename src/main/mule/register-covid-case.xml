@@ -150,12 +150,40 @@ output application/json
 }]]></ee:set-variable>
 						<ee:set-variable variableName="statusCode" ><![CDATA[503]]></ee:set-variable>
 						<ee:set-variable variableName="dbPropagate" ><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
 {
 	"code": 503,
 	"message": "Service unavailable",
 	"description": "The (upstream) service is temporarily not available",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+	"transactionId": vars.transactionId default correlationId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5788ed2f-1251-4564-b7bf-c7c12c6b30ca" >
+				<ee:transform doc:name="internalServerError" doc:id="549fc56d-1ac2-4e31-8b07-ce3d17307fbb" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="onErrorPropagate" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"code": 400,
+	"message": "Bad request",
+	"description": error.description default "Request validation failed",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+	"transactionId": vars.transactionId default correlationId
+}]]></ee:set-variable>
+						<ee:set-variable variableName="statusCode" ><![CDATA[500]]></ee:set-variable>
+						<ee:set-variable variableName="dbPropagate" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"code": 500,
+	"message": "Internal server error",
+	"description": "The server encountered an unexpected condition which prevented it from fulfilling the request",
 	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
 	"transactionId": vars.transactionId default correlationId
 }]]></ee:set-variable>
