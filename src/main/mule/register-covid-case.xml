@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 		<http:listener doc:name="Listener" doc:id="dc04aa8d-2702-4792-ac22-9375085fd22c" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
 			<http:error-response >
-				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload.message[0]]]]></http:body>
+				<http:body ><![CDATA[#[vars.onErrorPropagate]]]></http:body>
 			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="d0a63490-8f28-45a8-8f7a-3e395250c652" >
@@ -112,5 +112,25 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="End Log" doc:id="cc6e3500-1929-46a1-85b9-47a34d43c225" message="Completed register covid case flow: #[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4e05f9e9-897b-4687-b97b-81b8ad1115a0" type="JSON:SCHEMA_NOT_HONOURED">
+				<ee:transform doc:name="Transform Message" doc:id="43d02ade-953d-4ad1-be15-2efaf2e59caf" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="onErrorPropagate" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"code": 400,
+	"message": "Bad request",
+	"description": error.description default "Request validation failed",
+	"dateTime": now() as String {format: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+	"transactionId": vars.transactionId default correlationId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>
