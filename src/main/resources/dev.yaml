@@ -1,0 +1,9 @@
+http:
+  port: "8081"
+  
+db:
+  uhub:
+    host: "loclahost"
+    port: "3306"
+    username: "root"
+    password: "6Uf7cj63V*mpzQJ"

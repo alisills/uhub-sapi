@@ -16,6 +16,6 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		</db:my-sql-connection>
 	</db:config>
 	<configuration doc:name="Configuration" doc:id="83eaac8f-5fa2-4d63-8bf2-be757367f963" defaultErrorHandler-ref="global-error-handler" />
-	<configuration-properties doc:name="Configuration properties" doc:id="7712b493-f6c9-452a-8d8c-87d57066adf2" file="dev.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="7712b493-f6c9-452a-8d8c-87d57066adf2" file="dev.yaml" />
 	
 </mule>
