@@ -7,7 +7,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="get-covid-reportsFlow" doc:id="7b570a90-f726-45e6-9c67-34deb9d74d64" >
-		<http:listener doc:name="Listener" doc:id="9cda4291-496a-43b7-a5e9-c61caa1b6d0b" config-ref="HTTP_Listener_config" path="v1/reports" allowedMethods="GET"/>
+		<http:listener doc:name="Listener" doc:id="9cda4291-496a-43b7-a5e9-c61caa1b6d0b" config-ref="HTTP_Listener_config" path="v1/reports" allowedMethods="GET">
+			<http:error-response statusCode="#[vars.statusCode]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
 		<ee:transform doc:name="Set correlationId and transactionId" doc:id="ea9c7170-bb62-4168-9853-74f2cb3d7683" >
 			<ee:message >
 			</ee:message>
